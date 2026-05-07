@@ -1,0 +1,9 @@
+{
+  "name": "Nexus Health",
+  "description": "A modern PWA for medical consultations, prescription shopping, and patient management.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": []
+}
