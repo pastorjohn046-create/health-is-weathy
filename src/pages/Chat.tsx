@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Phone, Video, Info, MoreVertical, CheckCheck, Paperclip, Smile, Search, X, Mic, MicOff, Video as VideoIcon, VideoOff, Settings, SignalHigh, SignalMedium, SignalLow, PhoneOff } from 'lucide-react';
+import { Send, Phone, Video, Info, MoreVertical, CheckCheck, Paperclip, Smile, Search, X, Mic, MicOff, Video as VideoIcon, VideoOff, Settings, SignalHigh, SignalMedium, SignalLow, PhoneOff, Copy, PhoneCall } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
+import Peer from 'peerjs';
 
 const contacts = [
   { id: '1', name: 'Dr. Sarah Wilson', avatar: 'https://images.unsplash.com/photo-1559839734-2b71f153671e?auto=format&fit=crop&q=80&w=100', lastMessage: 'The results look normal.', time: '10:30 AM', online: true },
   { id: '2', name: 'Dr. Michael Chen', avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=100', lastMessage: 'See you tomorrow at 10.', time: 'Yesterday', online: false },
-  { id: '3', name: 'Medi-Bot Support', avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=100', lastMessage: 'Your prescription is ready.', time: 'Tue', online: true },
+  { id: '3', name: 'Pulse-Bot Support', avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=100', lastMessage: 'Your prescription is ready.', time: 'Tue', online: true },
 ];
 
 const initialMessages = [
@@ -28,11 +29,40 @@ export default function Chat() {
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [isQualityMenuOpen, setIsQualityMenuOpen] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [peerId, setPeerId] = useState<string | null>(null);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [incomingCall, setIncomingCall] = useState<any>(null);
+  const [showCallModal, setShowCallModal] = useState(false);
+  const [targetPeerIdInput, setTargetPeerIdInput] = useState('');
+  const [isRemoteConnected, setIsRemoteConnected] = useState(false);
+  
   const scrollRef = useRef<HTMLDivElement>(null);
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const peerRef = useRef<Peer | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  useEffect(() => {
+    const peer = new Peer();
+    peer.on('open', (id) => setPeerId(id));
+    peer.on('call', (call) => {
+      setIncomingCall(call);
+      setShowCallModal(true);
+    });
+    peerRef.current = peer;
+    return () => peer.destroy();
+  }, []);
+
+  useEffect(() => {
+    if (isRemoteConnected && remoteVideoRef.current && remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+    }
+  }, [isRemoteConnected, remoteStream]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
-    if (isVideoCallActive) {
+    if (isVideoCallActive && !isConnecting) {
       interval = setInterval(() => {
         setCallDuration(prev => prev + 1);
       }, 1000);
@@ -40,7 +70,112 @@ export default function Chat() {
       setCallDuration(0);
     }
     return () => clearInterval(interval);
-  }, [isVideoCallActive]);
+  }, [isVideoCallActive, isConnecting]);
+
+  const startCall = async (targetId?: string) => {
+    const idToCall = targetId || targetPeerIdInput;
+    if (!idToCall && !targetId) {
+      alert("Please enter a Doctor's ID or Peer ID to connect.");
+      return;
+    }
+
+    setIsVideoCallActive(true);
+    setIsConnecting(true);
+    
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: true, 
+        audio: true 
+      });
+      streamRef.current = stream;
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      }
+
+      if (peerRef.current && idToCall) {
+        const call = peerRef.current.call(idToCall, stream);
+        call.on('stream', (remote) => {
+          setRemoteStream(remote);
+          setIsRemoteConnected(true);
+          setIsConnecting(false);
+        });
+        call.on('close', () => endCall());
+        call.on('error', () => endCall());
+      } else {
+        // Fallback simulation if no peer ID provided
+        setTimeout(() => setIsConnecting(false), 2000);
+      }
+    } catch (err) {
+      console.error("Error accessing media devices:", err);
+      setIsVideoCallActive(false);
+      setIsConnecting(false);
+    }
+  };
+
+  const answerCall = async () => {
+    if (!incomingCall) return;
+    
+    setIsVideoCallActive(true);
+    setIsConnecting(true);
+    setShowCallModal(false);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: true, 
+        audio: true 
+      });
+      streamRef.current = stream;
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      }
+
+      incomingCall.answer(stream);
+      incomingCall.on('stream', (remote: MediaStream) => {
+        setRemoteStream(remote);
+        setIsRemoteConnected(true);
+        setIsConnecting(false);
+      });
+    } catch (err) {
+      console.error("Error answering call:", err);
+      endCall();
+    }
+  };
+
+  const endCall = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (incomingCall) {
+      incomingCall.close();
+    }
+    setRemoteStream(null);
+    setIsRemoteConnected(false);
+    setIsVideoCallActive(false);
+    setIsConnecting(false);
+    setIncomingCall(null);
+    setShowCallModal(false);
+  };
+
+  useEffect(() => {
+    if (isVideoCallActive && !isVideoOff && localVideoRef.current && streamRef.current) {
+      localVideoRef.current.srcObject = streamRef.current;
+    }
+    
+    if (streamRef.current) {
+      streamRef.current.getVideoTracks().forEach(track => {
+        track.enabled = !isVideoOff;
+      });
+    }
+  }, [isVideoOff, isVideoCallActive]);
+
+  useEffect(() => {
+    if (streamRef.current) {
+      streamRef.current.getAudioTracks().forEach(track => {
+        track.enabled = !isMuted;
+      });
+    }
+  }, [isMuted]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -91,6 +226,25 @@ export default function Chat() {
                <button className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-xl transition-all"><MoreVertical size={18} /></button>
             </div>
           </div>
+          
+          {peerId && (
+            <div className="flex items-center justify-between px-3 py-2 bg-indigo-50/50 rounded-xl border border-indigo-100">
+               <div className="flex flex-col">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-indigo-400">Your Connection ID</span>
+                  <span className="text-xs font-mono font-bold text-indigo-700 tracking-tight truncate max-w-[140px]">{peerId}</span>
+               </div>
+               <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(peerId);
+                  alert("Copied to clipboard!");
+                }}
+                className="p-2 bg-white text-indigo-600 rounded-lg shadow-sm border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all active:scale-95"
+               >
+                 <Copy size={14} />
+               </button>
+            </div>
+          )}
+
           <div className="relative group">
              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={16} />
              <input 
@@ -163,9 +317,21 @@ export default function Chat() {
              </div>
           </div>
           <div className="flex items-center gap-1">
+            <div className="hidden lg:flex flex-col items-end mr-3">
+               <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Doctor/Peer ID</span>
+               <div className="flex items-center bg-slate-100 rounded-xl px-3 py-1.5 border border-slate-200 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+                  <input 
+                    type="text" 
+                    placeholder="Enter ID..."
+                    value={targetPeerIdInput}
+                    onChange={(e) => setTargetPeerIdInput(e.target.value)}
+                    className="bg-transparent text-[10px] w-28 outline-none font-black uppercase tracking-tight text-slate-700 placeholder:text-slate-300"
+                  />
+               </div>
+            </div>
             <button className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-2xl transition-all active:scale-90"><Phone size={20} /></button>
             <button 
-              onClick={() => setIsVideoCallActive(true)}
+              onClick={() => startCall()}
               className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-2xl transition-all active:scale-90"
             >
               <Video size={20} />
@@ -323,18 +489,56 @@ export default function Chat() {
 
             {/* Video Canvas Container */}
             <div className="flex-1 relative overflow-hidden group bg-slate-950">
-               {/* Main Remote Video (Simulated) */}
+               {/* Main Remote Video */}
                <div className="absolute inset-0">
-                  <motion.img 
-                    key={videoQuality}
-                    src={activeContact.avatar.replace('w=100', 'w=1200')} 
-                    alt="Doctor" 
-                    className={cn(
-                      "w-full h-full object-cover transition-all duration-700",
-                      videoQuality === 'low' ? "blur-xl lg:blur-2xl opacity-80" : videoQuality === 'medium' ? "blur-md" : "blur-0"
-                    )}
-                  />
+                  {isRemoteConnected ? (
+                    <video 
+                      ref={remoteVideoRef}
+                      autoPlay 
+                      playsInline 
+                      className={cn(
+                        "w-full h-full object-cover transition-all duration-700",
+                        videoQuality === 'low' ? "blur-xl lg:blur-2xl opacity-80" : videoQuality === 'medium' ? "blur-md" : "blur-0"
+                      )}
+                    />
+                  ) : (
+                    <motion.div 
+                      key={videoQuality}
+                      className="w-full h-full relative"
+                    >
+                      <img 
+                        src={activeContact.avatar.replace('w=100', 'w=1200')} 
+                        alt="Doctor" 
+                        className={cn(
+                          "w-full h-full object-cover transition-all duration-700",
+                          videoQuality === 'low' ? "blur-xl lg:blur-2xl opacity-80" : videoQuality === 'medium' ? "blur-md" : "blur-0"
+                        )}
+                      />
+                    </motion.div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+                  
+                  {/* Digital Noise / Scanlines Effect */}
+                  <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+                  <div className="absolute inset-0 pointer-events-none animate-pulse bg-gradient-to-b from-transparent via-white/5 to-transparent h-1/2 w-full"></div>
+                  
+                  {isConnecting && (
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-10">
+                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                          <div className="w-20 h-20 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
+                          <p className="mt-6 text-white font-black uppercase tracking-[0.3em] text-[10px]">Connecting to {activeContact.name}...</p>
+                       </div>
+                    </div>
+                  )}
+
+                  {!isConnecting && (
+                    <div className="absolute top-32 left-8 z-20">
+                       <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-500/20 backdrop-blur-md rounded-full border border-rose-500/30">
+                          <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></div>
+                          <span className="text-rose-500 text-[10px] font-black uppercase tracking-widest">Encrypted Stream</span>
+                       </div>
+                    </div>
+                  )}
                </div>
 
                {/* Local User Video (Small Picture-in-Picture) */}
@@ -347,11 +551,13 @@ export default function Chat() {
                   <div className="w-full h-full relative">
                     {!isVideoOff ? (
                       <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-                        <img 
-                          src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400" 
-                          alt="You" 
+                        <video 
+                          ref={localVideoRef}
+                          autoPlay 
+                          playsInline 
+                          muted 
                           className={cn(
-                            "w-full h-full object-cover",
+                            "w-full h-full object-cover scale-x-[-1]",
                             videoQuality === 'low' ? "blur-sm" : "blur-0"
                           )}
                         />
@@ -415,7 +621,7 @@ export default function Chat() {
                <div className="w-px h-12 bg-white/10" />
 
                <button 
-                onClick={() => setIsVideoCallActive(false)}
+                onClick={endCall}
                 className="w-20 h-20 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-2xl shadow-rose-900/60 hover:bg-rose-700 transition-all active:scale-95 group relative overflow-hidden"
                >
                   <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -436,6 +642,53 @@ export default function Chat() {
                 </div>
               </motion.div>
             )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showCallModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="bg-white rounded-[2.5rem] p-8 w-full max-w-sm shadow-2xl flex flex-col items-center text-center space-y-6"
+            >
+              <div className="relative">
+                <div className="w-24 h-24 rounded-3xl bg-indigo-600 flex items-center justify-center text-white shadow-xl shadow-indigo-200">
+                   <PhoneCall size={40} className="animate-bounce" />
+                </div>
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-emerald-500 border-4 border-white flex items-center justify-center text-white">
+                   <div className="w-2h-2 rounded-full bg-white animate-ping"></div>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-2xl font-black text-slate-900 font-display tracking-tight">Incoming Call</h3>
+                <p className="text-slate-500 font-medium mt-1">Doctor is calling you for consultation</p>
+                <p className="text-[10px] font-mono font-bold text-slate-300 mt-2 truncate w-full">{incomingCall?.peer}</p>
+              </div>
+
+              <div className="flex gap-4 w-full">
+                <button 
+                  onClick={endCall}
+                  className="flex-1 bg-rose-50 text-rose-600 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-rose-600 hover:text-white transition-all active:scale-95"
+                >
+                  Decline
+                </button>
+                <button 
+                  onClick={answerCall}
+                  className="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-95"
+                >
+                  Answer
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -35,7 +35,7 @@ export default function Profile({ onSignOut }: { onSignOut: () => void }) {
         </div>
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight font-display">John Doe</h1>
-          <p className="text-slate-500 text-sm font-medium">Patient ID: #NX-8829</p>
+          <p className="text-slate-500 text-sm font-medium">Patient ID: #PP-8829</p>
           <div className="flex items-center justify-center gap-2 mt-2">
              <span className="bg-emerald-100 text-emerald-600 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">Pro Member</span>
              <span className="bg-blue-100 text-blue-600 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full text-center">A+ Positive</span>
@@ -95,7 +95,7 @@ export default function Profile({ onSignOut }: { onSignOut: () => void }) {
       </section>
 
       <footer className="pt-8">
-         <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">Nexus Health v1.0.4 • Privacy Policy • Terms</p>
+         <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">PulsePoint v1.0.0 • Privacy Policy • Terms</p>
       </footer>
     </div>
   );

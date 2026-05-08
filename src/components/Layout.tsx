@@ -1,7 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Home, MessageSquare, ShoppingBag, Calendar, User, Search, Bell } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Dashboard' },
@@ -27,9 +27,9 @@ export default function Layout() {
           <div className="p-6 border-b border-white/20">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-                <span className="font-bold text-xl font-display">N</span>
+                <span className="font-bold text-xl font-display">P</span>
               </div>
-              <span className="font-bold text-xl tracking-tight font-display text-slate-900">Nexus Health</span>
+              <span className="font-bold text-xl tracking-tight font-display text-slate-900">PulsePoint</span>
             </div>
           </div>
           
@@ -104,16 +104,21 @@ export default function Layout() {
             "flex-1",
             location.pathname === '/chat' ? "overflow-hidden p-0 pb-16 lg:pb-0" : "overflow-y-auto p-6 md:p-8 pb-24 lg:pb-8"
           )}>
-            <motion.div
-              layout
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className={cn(location.pathname === '/chat' ? "h-full" : "")}
-            >
-              <Outlet />
-            </motion.div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 1.02 }}
+                transition={{ 
+                  duration: 0.3,
+                  ease: [0.23, 1, 0.32, 1]
+                }}
+                className={cn(location.pathname === '/chat' ? "h-full" : "min-h-full")}
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </div>

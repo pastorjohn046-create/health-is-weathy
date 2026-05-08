@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'motion/react';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
@@ -16,13 +16,22 @@ import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import SplashScreen from './components/SplashScreen';
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const location = useLocation();
 
   useEffect(() => {
     // Check for existing session
-    const authStatus = localStorage.getItem('nexus_auth');
+    const authStatus = localStorage.getItem('pulse_auth');
     setIsAuthenticated(authStatus === 'true');
 
     const timer = setTimeout(() => {
@@ -33,12 +42,12 @@ export default function App() {
   }, []);
 
   const handleAuthSuccess = () => {
-    localStorage.setItem('nexus_auth', 'true');
+    localStorage.setItem('pulse_auth', 'true');
     setIsAuthenticated(true);
   };
 
   const handleSignOut = () => {
-    localStorage.removeItem('nexus_auth');
+    localStorage.removeItem('pulse_auth');
     setIsAuthenticated(false);
   };
 
@@ -49,23 +58,26 @@ export default function App() {
   };
 
   return (
-    <Router>
+    <>
+      <ScrollToTop />
       <AnimatePresence mode="wait">
         {showSplash && <SplashScreen key="splash" />}
       </AnimatePresence>
 
-      <Routes>
-        <Route path="/login" element={<Login onAuthSuccess={handleAuthSuccess} />} />
-        <Route path="/signup" element={<SignUp onAuthSuccess={handleAuthSuccess} />} />
-        <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/pharmacy" element={<Pharmacy />} />
-          <Route path="/appointments" element={<Appointments />} />
-          <Route path="/profile" element={<Profile onSignOut={handleSignOut} />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
-    </Router>
+      <AnimatePresence mode="wait">
+        <Routes>
+          <Route path="/login" element={<Login onAuthSuccess={handleAuthSuccess} />} />
+          <Route path="/signup" element={<SignUp onAuthSuccess={handleAuthSuccess} />} />
+          <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/pharmacy" element={<Pharmacy />} />
+            <Route path="/appointments" element={<Appointments />} />
+            <Route path="/profile" element={<Profile onSignOut={handleSignOut} />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </AnimatePresence>
+    </>
   );
 }

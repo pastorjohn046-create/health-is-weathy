@@ -40,7 +40,7 @@ export default function SignUp({ onAuthSuccess }: { onAuthSuccess: () => void })
                <Activity size={32} />
             </div>
             <h1 className="text-3xl font-black text-slate-900 font-display tracking-tight">Create Account</h1>
-            <p className="text-slate-500 text-sm font-medium mt-2">Join Nexus Health to manage your healthcare journey professionaly.</p>
+            <p className="text-slate-500 text-sm font-medium mt-2">Join PulsePoint to manage your healthcare journey professionally.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">

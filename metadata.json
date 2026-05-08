@@ -1,6 +1,6 @@
 {
-  "name": "Nexus Health",
-  "description": "A modern PWA for medical consultations, prescription shopping, and patient management.",
+  "name": "PulsePoint",
+  "description": "PulsePoint - Your advanced healthcare gateway for consultations and wellness.",
   "requestFramePermissions": [
     "camera",
     "microphone"

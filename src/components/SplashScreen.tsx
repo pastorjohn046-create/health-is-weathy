@@ -59,7 +59,7 @@ export default function SplashScreen() {
             transition={{ delay: 0.4, duration: 0.8 }}
             className="text-4xl font-black text-slate-900 font-display tracking-tighter"
           >
-            Nexus Health
+            PulsePoint
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }}
