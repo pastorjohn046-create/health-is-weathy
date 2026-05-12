@@ -15,25 +15,28 @@ export default function Layout() {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen font-sans selection:bg-indigo-100 selection:text-indigo-900 overflow-hidden">
-      {/* Background Mesh Orbs */}
-      <div className="fixed -top-20 -left-20 h-96 w-96 rounded-full bg-blue-300 opacity-20 blur-[100px] pointer-events-none"></div>
-      <div className="fixed bottom-0 right-0 h-96 w-96 rounded-full bg-indigo-300 opacity-20 blur-[100px] pointer-events-none"></div>
+    <div className="min-h-screen font-sans selection:bg-indigo-100 selection:text-indigo-900 overflow-hidden relative bg-slate-50">
+      {/* Premium Animated Background Mesh */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div className="absolute top-0 -right-4 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+      </div>
 
       {/* Main Container Wrapper */}
-      <div className="relative flex h-screen lg:p-4 overflow-hidden">
+      <div className="relative flex h-screen lg:p-4 overflow-hidden z-10">
         {/* Desktop Sidebar */}
-        <aside className="w-64 glass-panel border-r-0 lg:rounded-3xl lg:mr-4 hidden lg:flex flex-col z-50">
-          <div className="p-6 border-b border-white/20">
+        <aside className="w-[280px] glass-panel border-r-0 lg:rounded-[2rem] lg:mr-4 hidden lg:flex flex-col z-50 shadow-2xl shadow-indigo-100/50">
+          <div className="p-8 pb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-                <span className="font-bold text-xl font-display">P</span>
+              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 ring-1 ring-white/50">
+                <span className="font-bold text-2xl font-display">P</span>
               </div>
-              <span className="font-bold text-xl tracking-tight font-display text-slate-900">PulsePoint</span>
+              <span className="font-bold text-2xl tracking-tight font-display text-slate-800">PulsePoint</span>
             </div>
           </div>
           
-          <nav className="flex-1 p-4 space-y-1">
+          <nav className="flex-1 px-4 py-6 space-y-2">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               const Icon = item.icon;
@@ -42,57 +45,68 @@ export default function Layout() {
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
+                    "flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group relative overflow-hidden",
                     isActive 
-                      ? "bg-white/60 text-indigo-600 font-semibold shadow-sm border border-white/50" 
-                      : "text-slate-500 hover:bg-white/30 hover:text-slate-900"
+                      ? "bg-white text-indigo-600 shadow-[0_8px_30px_rgb(0,0,0,0.04)]" 
+                      : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
                   )}
                 >
-                  <Icon size={20} className={cn("transition-transform group-hover:scale-110", isActive ? "text-indigo-600" : "text-slate-400")} />
-                  <span className="text-sm">{item.label}</span>
+                  {isActive && (
+                    <motion.div 
+                      layoutId="activeNavIndicator"
+                      className="absolute inset-0 bg-gradient-to-r from-indigo-50/50 to-transparent"
+                      initial={false}
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                  <Icon size={22} className={cn("relative z-10 transition-transform duration-300 group-hover:scale-110", isActive ? "text-indigo-600" : "text-slate-400")} />
+                  <span className="relative z-10 font-medium">{item.label}</span>
                 </Link>
               );
             })}
           </nav>
 
-          <div className="p-4 border-t border-white/20">
-             <div className="bg-indigo-600/10 border border-indigo-200/30 rounded-2xl p-4">
-                <p className="text-[10px] text-indigo-500 font-bold uppercase tracking-wider mb-2">Emergency Hub</p>
-                <p className="text-sm font-bold mb-3 text-slate-800">Need immediate help?</p>
-                <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg transition-colors shadow-md shadow-indigo-100">
-                  CALL NOW
-                </button>
+          <div className="p-6 mt-auto">
+             <div className="relative bg-gradient-to-br from-indigo-900 to-violet-900 rounded-[2rem] p-6 text-white overflow-hidden shadow-xl shadow-indigo-900/20">
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                <div className="relative z-10">
+                  <p className="text-[10px] text-indigo-200 font-bold uppercase tracking-widest mb-2">Emergency</p>
+                  <p className="text-base font-display font-medium mb-4 leading-tight">Need immediate assistance?</p>
+                  <button className="w-full bg-white text-indigo-900 hover:bg-indigo-50 text-sm font-bold py-3 rounded-xl transition-all shadow-lg active:scale-95">
+                    Call Now
+                  </button>
+                </div>
              </div>
           </div>
         </aside>
 
         {/* Content Area */}
-        <div className="flex-1 flex flex-col glass-panel lg:rounded-3xl overflow-hidden relative">
+        <div className="flex-1 flex flex-col glass-panel lg:rounded-[2rem] overflow-hidden relative shadow-2xl shadow-slate-200/50 border-white/60">
           {/* Header */}
           {location.pathname !== '/chat' && (
-            <header className="h-16 border-b border-white/20 flex items-center justify-between px-6 bg-white/20 backdrop-blur-md sticky top-0 z-40">
+            <header className="h-20 border-b border-white/40 flex items-center justify-between px-8 bg-white/40 backdrop-blur-xl sticky top-0 z-40 transition-all">
               <div className="flex items-center gap-4 flex-1">
                 <div className="relative max-w-md w-full hidden md:block">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input 
                     type="text" 
-                    placeholder="Search medications, doctors..." 
-                    className="w-full pl-10 pr-4 py-2 bg-white/40 border border-white/40 rounded-full text-sm focus:ring-2 focus:ring-indigo-400 transition-all outline-none placeholder:text-slate-400"
+                    placeholder="Search for doctors, medications, or health tips..." 
+                    className="w-full pl-12 pr-4 py-3 bg-white/60 border border-white/60 rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500/50 transition-all outline-none placeholder:text-slate-400 shadow-sm hover:bg-white/80"
                   />
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <button className="p-2 text-slate-500 hover:bg-white/40 rounded-full relative transition-colors">
+              <div className="flex items-center gap-6">
+                <button className="p-2.5 text-slate-500 hover:text-indigo-600 hover:bg-white/80 rounded-full relative transition-all shadow-sm bg-white/40">
                   <Bell size={20} />
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
+                  <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
                 </button>
-                <div className="flex items-center gap-3 pl-4 border-l border-white/20">
+                <div className="flex items-center gap-4 pl-6 border-l border-slate-200/60">
                   <div className="text-right hidden sm:block">
-                    <p className="text-sm font-bold leading-none text-slate-900">John Doe</p>
-                    <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mt-1">Gold Member</p>
+                    <p className="text-sm font-bold leading-none text-slate-800">John Doe</p>
+                    <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mt-1.5">Premium Member</p>
                   </div>
-                  <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden bg-white/50">
-                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100&h=100" alt="Avatar" className="w-full h-full object-cover" />
+                  <div className="w-12 h-12 rounded-full ring-4 ring-white shadow-md overflow-hidden bg-slate-100 cursor-pointer hover:scale-105 transition-transform">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150&h=150" alt="Avatar" className="w-full h-full object-cover" />
                   </div>
                 </div>
               </div>

@@ -44,8 +44,10 @@ export default function Appointments() {
       {/* Page Header */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight font-display text-slate-900">Medical Schedule</h1>
-          <p className="text-slate-500 text-sm font-medium mt-1">Manage your professional consultations and health track.</p>
+          <h1 className="text-4xl font-bold tracking-tight font-display text-slate-800">
+            Medical <span className="text-gradient">Schedule</span>
+          </h1>
+          <p className="text-slate-500 text-sm font-medium mt-2">Manage your professional consultations and health track.</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative group hidden sm:block">
