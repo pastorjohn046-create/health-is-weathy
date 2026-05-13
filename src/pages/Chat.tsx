@@ -36,6 +36,8 @@ export default function Chat() {
   const [showCallModal, setShowCallModal] = useState(false);
   const [targetPeerIdInput, setTargetPeerIdInput] = useState('');
   const [isRemoteConnected, setIsRemoteConnected] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const localVideoRef = useRef<HTMLVideoElement>(null);
@@ -200,16 +202,47 @@ export default function Chat() {
     setMessages([...messages, newMessage]);
     setInput('');
     
-    // Fake bot response
+    // Simulate typing and response
+    setIsTyping(true);
     setTimeout(() => {
+      setIsTyping(false);
+      const responses = [
+        "I'll review your symptoms and get back to you shortly. In the meantime, try to rest.",
+        "That's noted. Have you noticed any other changes in the last 24 hours?",
+        "I understand. Based on what you've said, it might be best to schedule a follow-up if it persists.",
+        "Thank you for sharing that. I'm looking over your recent vitals now.",
+        "Got it. Please make sure to keep yourself hydrated and monitor your temperature."
+      ];
+      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+      
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
-        text: "I'll review that. Anything else bothering you?",
+        text: randomResponse,
         sender: 'doctor',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }]);
-    }, 2000);
+    }, 2000 + Math.random() * 2000);
   };
+
+  // Simulate occasional incoming check-ins
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (messages.length > 0 && messages[messages.length - 1].sender === 'user') return;
+      
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        setMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          text: "Just checking in. How's everything going with the new prescription?",
+          sender: 'doctor',
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }]);
+      }, 3000);
+    }, 15000); // Check in after 15 seconds of inactivity
+
+    return () => clearTimeout(timer);
+  }, [messages]);
 
   return (
     <div className="flex h-full overflow-hidden bg-white/20">
@@ -381,6 +414,20 @@ export default function Chat() {
                 </motion.div>
               );
             })}
+            {isTyping && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mr-auto items-start flex flex-col gap-2"
+              >
+                <div className="bg-white/90 p-4 rounded-[2rem] rounded-tl-none border border-white/50 shadow-slate-200/20 flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></div>
+                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                </div>
+                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-2">{activeContact.name} is typing...</span>
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
 

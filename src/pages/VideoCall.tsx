@@ -13,6 +13,11 @@ export default function VideoCall() {
   const [isMuted, setIsMuted] = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [messages, setMessages] = useState([
+    { id: '1', text: "Hello John, I'm reviewing your latest blood test results. Everything looks normal overall.", sender: 'doctor', time: '10:15 AM' }
+  ]);
   const [callTime, setCallTime] = useState(0);
   const [isConnecting, setIsConnecting] = useState(true);
 
@@ -36,6 +41,30 @@ export default function VideoCall() {
 
   const handleEndCall = () => {
     navigate('/appointments');
+  };
+
+  const handleSendMessage = () => {
+    if (!chatInput.trim()) return;
+    const newMessage = {
+      id: Date.now().toString(),
+      text: chatInput,
+      sender: 'user',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    setMessages([...messages, newMessage]);
+    setChatInput('');
+
+    // Simulate doctor typing
+    setIsTyping(true);
+    setTimeout(() => {
+      setIsTyping(false);
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        text: "I'll make a note of that in your records. Anything else you'd like to discuss during this call?",
+        sender: 'doctor',
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }]);
+    }, 3000);
   };
 
   return (
@@ -210,27 +239,44 @@ export default function VideoCall() {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              <div className="flex flex-col items-start gap-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Dr. Sarah Wilson • 10:15 AM</span>
-                <div className="bg-slate-800 p-4 rounded-2xl rounded-tl-none border border-white/5 max-w-[85%]">
-                  <p className="text-sm">Hello John, I'm reviewing your latest blood test results. Everything looks normal overall.</p>
+              {messages.map((msg) => (
+                <div key={msg.id} className={cn("flex flex-col gap-2", msg.sender === 'user' ? "items-end" : "items-start")}>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                    {msg.sender === 'user' ? 'You' : 'Dr. Sarah Wilson'} • {msg.time}
+                  </span>
+                  <div className={cn(
+                    "p-4 rounded-2xl max-w-[85%] border shadow-lg",
+                    msg.sender === 'user' ? "bg-indigo-600 border-indigo-500 text-white rounded-tr-none" : "bg-slate-800 border-white/5 text-white rounded-tl-none"
+                  )}>
+                    <p className="text-sm">{msg.text}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">You • 10:16 AM</span>
-                <div className="bg-indigo-600 p-4 rounded-2xl rounded-tr-none max-w-[85%] shadow-lg shadow-indigo-900/20">
-                  <p className="text-sm">That's good to hear. Any specific concerns about the iron levels?</p>
+              ))}
+              {isTyping && (
+                <div className="flex flex-col items-start gap-2">
+                   <div className="bg-slate-800 p-4 rounded-2xl rounded-tl-none border border-white/5 flex items-center gap-1">
+                      <div className="w-1 h-1 bg-slate-400 rounded-full animate-bounce"></div>
+                      <div className="w-1 h-1 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                      <div className="w-1 h-1 bg-slate-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                   </div>
                 </div>
-              </div>
+              )}
             </div>
             <div className="p-6 border-t border-white/10">
               <div className="flex items-center gap-2 bg-slate-800 p-2 rounded-2xl border border-white/10">
                  <input 
                   type="text" 
                   placeholder="Type a message..." 
-                  className="flex-1 bg-transparent border-none outline-none px-3 text-sm placeholder:text-slate-500"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                  className="flex-1 bg-transparent border-none outline-none px-3 text-sm placeholder:text-slate-500 text-white"
                  />
-                 <button className="bg-indigo-600 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-900/20">
+                 <button 
+                  onClick={handleSendMessage}
+                  disabled={!chatInput.trim()}
+                  className="bg-indigo-600 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-900/20 disabled:opacity-50"
+                 >
                    <MessageSquare size={18} />
                  </button>
               </div>
