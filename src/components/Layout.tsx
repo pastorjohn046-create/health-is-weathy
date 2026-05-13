@@ -1,5 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, MessageSquare, ShoppingBag, Calendar, User, Search, Bell } from 'lucide-react';
+import { Home, MessageSquare, ShoppingBag, Calendar, User, Search, Bell, FileText } from 'lucide-react';
+
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -8,6 +9,7 @@ const navItems = [
   { path: '/chat', icon: MessageSquare, label: 'Messages' },
   { path: '/pharmacy', icon: ShoppingBag, label: 'Pharmacy' },
   { path: '/appointments', icon: Calendar, label: 'Schedule' },
+  { path: '/records', icon: FileText, label: 'Health Records' },
   { path: '/profile', icon: User, label: 'Profile' },
 ];
 

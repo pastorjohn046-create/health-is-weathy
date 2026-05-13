@@ -24,3 +24,13 @@ export interface Appointment {
   time: string;
   status: 'upcoming' | 'completed' | 'cancelled';
 }
+
+export interface HealthRecord {
+  id: string;
+  title: string;
+  date: string;
+  doctor: string;
+  type: 'Lab Result' | 'Prescription' | 'Report';
+  size: string;
+  status: 'Verified' | 'Expired' | 'Pending';
+}

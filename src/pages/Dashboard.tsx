@@ -1,6 +1,7 @@
-import { Activity, Thermometer, Droplets, Heart, Calendar, Plus, ArrowRight, TrendingUp, Pill } from 'lucide-react';
+import { Activity, Thermometer, Droplets, Heart, Calendar, Plus, ArrowRight, TrendingUp, Pill, FileText } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
+import SymptomTracker from '../components/SymptomTracker';
 
 const stats = [
   { label: 'Heart Rate', value: '72 bpm', trend: '+2% from yesterday', icon: Heart, color: 'text-rose-500', bg: 'bg-rose-100/50', border: 'border-rose-200' },
@@ -133,10 +134,40 @@ export default function Dashboard() {
             ))}
           </div>
         </section>
+        
+        {/* Symptom Tracker */}
+        <SymptomTracker />
         </div>
 
         {/* Right Sidebar */}
         <div className="space-y-8">
+          {/* Nutrition Progress */}
+          <section className="space-y-4">
+             <h2 className="text-xl font-bold font-display">Nutrition</h2>
+             <div className="glass-panel p-6 rounded-[2rem] space-y-6">
+                {[
+                  { label: 'Calories', current: 1250, goal: 2000, unit: 'kcal', color: 'bg-indigo-500' },
+                  { label: 'Protein', current: 45, goal: 80, unit: 'g', color: 'bg-rose-500' },
+                  { label: 'Water', current: 1.8, goal: 3, unit: 'L', color: 'bg-sky-500' },
+                ].map((item) => (
+                  <div key={item.label} className="space-y-2">
+                    <div className="flex justify-between items-end">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{item.label}</span>
+                      <span className="text-xs font-bold text-slate-700">{item.current} / {item.goal} <span className="text-[9px] text-slate-400">{item.unit}</span></span>
+                    </div>
+                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(item.current / item.goal) * 100}%` }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className={`h-full ${item.color} rounded-full`}
+                      />
+                    </div>
+                  </div>
+                ))}
+             </div>
+          </section>
+
           {/* Health Tip */}
           <section className="space-y-4">
            <h2 className="text-xl font-bold font-display">Health Tips</h2>
@@ -155,6 +186,26 @@ export default function Dashboard() {
                  </button>
                </div>
             </div>
+        </section>
+
+        {/* Quick Access Records */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-bold font-display">Recent Records</h2>
+          <div className="glass-panel p-4 rounded-[2rem] space-y-3">
+             <div className="flex items-center gap-3 p-3 bg-white/40 rounded-2xl border border-white/50 group cursor-pointer hover:bg-white transition-all">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                   <FileText size={20} />
+                </div>
+                <div className="flex-1">
+                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-700">Blood Test</p>
+                   <p className="text-[9px] text-slate-400 font-bold">Oct 15, 2026</p>
+                </div>
+                <ArrowRight size={14} className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+             </div>
+             <Link to="/records" className="block text-center text-indigo-600 text-[10px] font-black uppercase tracking-[0.2em] py-2 hover:underline">
+                View All Records
+             </Link>
+          </div>
         </section>
       </div>
     </div>

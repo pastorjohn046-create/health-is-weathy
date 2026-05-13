@@ -12,6 +12,7 @@ import Chat from './pages/Chat';
 import Pharmacy from './pages/Pharmacy';
 import Appointments from './pages/Appointments';
 import Profile from './pages/Profile';
+import HealthRecords from './pages/HealthRecords';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import SplashScreen from './components/SplashScreen';
@@ -73,6 +74,7 @@ export default function App() {
             <Route path="/chat" element={<Chat />} />
             <Route path="/pharmacy" element={<Pharmacy />} />
             <Route path="/appointments" element={<Appointments />} />
+            <Route path="/records" element={<HealthRecords />} />
             <Route path="/profile" element={<Profile onSignOut={handleSignOut} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
