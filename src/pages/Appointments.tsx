@@ -1,5 +1,6 @@
 import { Calendar as CalendarIcon, Clock, MapPin, Video, ChevronRight, Filter, Plus, Search, MoreHorizontal, User } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 
 const appointments = [
@@ -125,10 +126,20 @@ export default function Appointments() {
                   </div>
 
                   <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <button className="flex-1 sm:flex-none glass-card border-none hover:bg-white text-indigo-600 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all">
-                      Details
-                    </button>
-                    <button className="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white p-3.5 rounded-2xl transition-all shadow-lg shadow-indigo-100 active:scale-90 flex items-center justify-center">
+                    {app.type === 'Video Call' ? (
+                      <Link 
+                        to={`/video-call/${app.id}`}
+                        className="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2"
+                      >
+                        <Video size={14} />
+                        Join Call
+                      </Link>
+                    ) : (
+                      <button className="flex-1 sm:flex-none glass-card border-none hover:bg-white text-indigo-600 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all">
+                        Details
+                      </button>
+                    )}
+                    <button className="flex-1 sm:flex-none bg-slate-100 hover:bg-slate-200 text-slate-600 p-3.5 rounded-2xl transition-all active:scale-90 flex items-center justify-center">
                       <ChevronRight size={18} />
                     </button>
                   </div>

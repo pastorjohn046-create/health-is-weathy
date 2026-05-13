@@ -13,6 +13,7 @@ import Pharmacy from './pages/Pharmacy';
 import Appointments from './pages/Appointments';
 import Profile from './pages/Profile';
 import HealthRecords from './pages/HealthRecords';
+import VideoCall from './pages/VideoCall';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import SplashScreen from './components/SplashScreen';
@@ -69,6 +70,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login onAuthSuccess={handleAuthSuccess} />} />
           <Route path="/signup" element={<SignUp onAuthSuccess={handleAuthSuccess} />} />
+          <Route path="/video-call/:id" element={<ProtectedRoute><VideoCall /></ProtectedRoute>} />
           <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/chat" element={<Chat />} />
